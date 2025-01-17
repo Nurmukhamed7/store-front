@@ -1,17 +1,15 @@
-from django.db.models import Q
+from django.db.models import F,Q
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from store.models import Product, Customer, Collection, Order
+from store.models import Product, Customer, Collection, Order, OrderItem
 
 
 # Create your views here.
 def say_hello(request):
-    # Products: inventory < 10 AND price < 20
-    query_set = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20)) #OR
-    # query_set = Product.objects.filter(Q(inventory__lt=10) & ~Q(unit_price__lt=20)) # ~ means NOT
-    # query_set = Product.objects.filter(Q(inventory__lt=10) & ~Q(unit_price__lt=20)) #AND
-
-
+    # select products that has been ordered and sort by title
+    # filter product by looking up in OrderItem
+    # go to product table and select all with query_set id above:
+    query_set = Product.objects.filter(id__in=OrderItem.objects.values('product_id').distinct()).order_by('title')
 
     return render(request, 'hello.html', {'name': "Alex", 'products': list(query_set)})

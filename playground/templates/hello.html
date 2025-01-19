@@ -1,6 +1,6 @@
 <h1>hello world {{name}}</h1>
 <ul>
-    {% for product in products %}
-    <li>{{product.title}}</li>
+    {% for order in orders %}
+    <li>{{order.id}} - {{order.customer.first_name}}</li>
     {% endfor %}
 </ul>

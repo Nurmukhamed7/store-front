@@ -1,6 +1,10 @@
-<h1>hello world {{name}}</h1>
-<ul>
-    {% for order in orders %}
-    <li>{{order.id}} - {{order.customer.first_name}}</li>
-    {% endfor %}
-</ul>
+<html>
+    <body>
+        <h1>hello world {{name}}</h1>
+        <ul>
+            {% for order in orders %}
+            <li>{{order.id}} - {{order.customer.first_name}}</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

@@ -1,16 +1,23 @@
-from django.db.models import F,Q,Value, Func,Count
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import F,Q,Value, Func,Count, ExpressionWrapper,DecimalField
 from django.db.models.aggregates import Min, Sum
 from django.db.models.functions import Concat
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from store.models import Product, Customer, Collection, Order, OrderItem
+from tags.models import TaggedItem
 
 
 # Create your views here.
 def say_hello(request):
-    queryset = Customer.objects.annotate(
-        orders_count=Count('order'),
-    )
+    content_type = ContentType.objects.get_for_model(Product)
 
-    return render(request, 'hello.html', {'name': "Alex", 'result': list(queryset)})
+    queryset = (TaggedItem.objects
+        .select_related('tag')
+        .filter(
+            content_type=content_type,
+            object_id=1
+    ))
+
+    return render(request, 'hello.html', {'name': "Alex", 'tags': list(queryset)})

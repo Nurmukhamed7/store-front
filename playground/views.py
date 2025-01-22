@@ -11,6 +11,11 @@ from tags.models import TaggedItem
 
 # Create your views here.
 def say_hello(request):
-    queryset = TaggedItem.objects.get_tags_for(Product, 1)
+    collection = Collection()
+    collection.title = 'Video Games'
+    collection.featured_product = Product(pk=1)
+    collection.save()
 
-    return render(request, 'hello.html', {'name': "Alex", 'tags': list(queryset)})
+    # collection = Collection.objects.create(title='Video Games', featured_product_id=1)
+
+    return render(request, 'hello.html', {'name': "Alex"})

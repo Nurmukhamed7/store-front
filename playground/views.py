@@ -12,20 +12,7 @@ from tags.models import TaggedItem
 
 # Create your views here.
 def say_hello(request):
-    # ... some code here
+    queryset = Product.objects.raw('SELECT * FROM store_product')
 
-    with transaction.atomic():
-        # parent record
-        order=Order()
-        order.customer_id = 1
-        order.save()
 
-        # child record
-        item = OrderItem()
-        item.order = order
-        item.product_id = -1
-        item.quantity = 1
-        item.unit_price = 10
-        item.save()
-
-    return render(request, 'hello.html', {'name': "Alex"})
+    return render(request, 'hello.html', {'name': "Alex", 'result': list(queryset)})

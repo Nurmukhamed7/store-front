@@ -1,11 +1,23 @@
 from urllib.parse import urlencode
 
 from django.contrib import admin
+from django.db.models import QuerySet
 from django.db.models.aggregates import Count
 from django.utils.html import format_html
 from django.urls import reverse
 
 from . import models
+
+class InventoryFilter(admin.SimpleListFilter):
+    title = 'inventory'
+    parameter_name = 'inventory'
+    def lookups(self, request, model_admin):
+        return [
+           ('<10', 'Low')
+        ]
+    def queryset(self, request, queryset:QuerySet):
+        if self.value() == '<10':
+            return queryset.filter(inventory__lt=10)
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -13,6 +25,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ['unit_price']
     list_per_page = 10
     list_select_related = ['collection']
+    list_filter = ['collection', 'last_update', InventoryFilter]
 
     def collection_title(self, product):
         return product.collection.title

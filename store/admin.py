@@ -6,8 +6,6 @@ from django.db.models import QuerySet
 from django.db.models.aggregates import Count
 from django.utils.html import format_html
 from django.urls import reverse
-
-from tags.models import TaggedItem
 from . import models
 
 class InventoryFilter(admin.SimpleListFilter):
@@ -21,13 +19,10 @@ class InventoryFilter(admin.SimpleListFilter):
         if self.value() == '<10':
             return queryset.filter(inventory__lt=10)
 
-class TagInline(GenericTabularInline):
-    autocomplete_fields = ['tag']
-    model = TaggedItem
+
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [TagInline]
     prepopulated_fields = {
         "slug": ["title"]
     }

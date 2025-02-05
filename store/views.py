@@ -1,25 +1,23 @@
+from itertools import product
+
 from django.db.models.aggregates import Count
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 
-from store.models import Product, Collection
+from store.models import Product, Collection, OrderItem
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from store.serializers import ProductSerializer, CollectionSerializer
 
 
-class ProductList(ListCreateAPIView):
-    queryset = Product.objects.select_related('collection').all()
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
     def get_serializer_context(self):
         return {'request': self.request}
 
-class ProductDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    # lookup_field = 'id' 2 variant
 
     def delete(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
@@ -31,14 +29,8 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CollectionList(ListCreateAPIView):
-    queryset = Collection.objects.annotate(
-        products_count=Count('products')).all()
-    serializer_class = CollectionSerializer
-
-
-class CollectionDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Collection.objects.annotate(products_count=Count('products'))
+class CollectionViewSet(viewsets.ModelViewSet):
+    queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
 
     def delete(self, request, pk):
@@ -49,3 +41,4 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         collection.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+

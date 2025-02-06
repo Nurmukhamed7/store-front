@@ -5,10 +5,10 @@ from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 
-from store.models import Product, Collection, OrderItem
+from store.models import Product, Collection, OrderItem, Review
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from store.serializers import ProductSerializer, CollectionSerializer
+from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -40,3 +40,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
         collection.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer

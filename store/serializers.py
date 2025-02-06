@@ -28,6 +28,11 @@ class CollectionSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'date', 'name', 'description', 'product']
+        fields = ['id', 'date', 'name', 'description']
+
+    def create(self, validated_data):
+        print("test:", validated_data)  # Debugging line
+        product_id = self.context['product_id'] # from views.py -> get_serializer_context
+        return Review.objects.create(product_id=product_id, **validated_data)
 
 

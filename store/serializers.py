@@ -40,7 +40,6 @@ class SimpleProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'title', 'unit_price']
 
-
 class CartItemSerializer(serializers.ModelSerializer):
     product = SimpleProductSerializer() # No need "many=True" because each CartItem has only one Product
     total_price = serializers.SerializerMethodField()
@@ -66,4 +65,30 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'items', 'total_price'] # here specify the fields that you want to include in the API response sent to the client.
 
+class AddCartItemSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField()
 
+    # if we add product that doesn't exist show error
+    def validate_product_id(self, value):
+        if not Product.objects.filter(pk=value).exists():
+            raise serializers.ValidationError('This product does not exist.')
+        return value
+
+    def save(self, **kwargs):
+        cart_id = self.context['cart_id'] # передаем через URL
+        product_id = self.validated_data['product_id'] # передаются в теле запроса от клиента
+        quantity = self.validated_data['quantity'] # передаются в теле запроса от клиента
+
+        try:
+            cart_item = CartItem.objects.get(cart_id=cart_id, product_id=product_id)
+            cart_item.quantity += quantity
+            cart_item.save()
+            self.instance = cart_item # that's how ModelSerializer->save method works under the hood
+        except CartItem.DoesNotExist:
+            self.instance = CartItem.objects.create(cart_id=cart_id, **self.validated_data) # **self.validated_data this is cart_id and prod_id
+
+        return self.instance
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product_id', 'quantity']

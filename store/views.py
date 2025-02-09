@@ -11,7 +11,7 @@ from store.filters import ProductFilter
 from store.models import Product, Collection, OrderItem, Review, Cart, CartItem
 from rest_framework.response import Response
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
-    CartItemSerializer
+    CartItemSerializer, AddCartItemSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -64,7 +64,14 @@ class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, Gener
     serializer_class = CartSerializer
 
 class CartItemViewSet(viewsets.ModelViewSet):
-    serializer_class = CartItemSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddCartItemSerializer
+        return CartItemSerializer
+
+    def get_serializer_context(self):
+        return {'cart_id': self.kwargs['cart_pk']}
 
     def get_queryset(self):
         return (CartItem.objects

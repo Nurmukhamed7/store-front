@@ -7,10 +7,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from store.filters import ProductFilter
 from store.models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
 from rest_framework.response import Response
+
+from store.permissions import isAdminOrReadOnly
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer
 
@@ -21,6 +23,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     pagination_class = PageNumberPagination
+    permission_classes = [isAdminOrReadOnly]
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
 
@@ -40,6 +43,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
+    permission_classes = [isAdminOrReadOnly] # closed API for POST, only GET
 
     def delete(self, request, pk):
         collection = get_object_or_404(Collection, pk=pk)
@@ -82,19 +86,13 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 .filter(cart_id=self.kwargs['cart_pk'])
                 .select_related('product'))
 
-class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated] # close API for this CustomerViewSet
-
-    # Customize permissions by methods
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        return [IsAuthenticated()]
+    permission_classes = [IsAdminUser] # close API for this CustomerViewSet
 
     # Получаем информацию о текущем авторизованном клиенте без передачи id в URL
-    @action(detail=False, methods=['GET', 'PUT'])
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
         (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
         # получить информацию о себе

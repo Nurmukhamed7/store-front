@@ -7,7 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from store.filters import ProductFilter
 from store.models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
 from rest_framework.response import Response
@@ -85,6 +85,13 @@ class CartItemViewSet(viewsets.ModelViewSet):
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+    permission_classes = [IsAuthenticated] # close API for this CustomerViewSet
+
+    # Customize permissions by methods
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     # Получаем информацию о текущем авторизованном клиенте без передачи id в URL
     @action(detail=False, methods=['GET', 'PUT'])

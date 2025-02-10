@@ -7,12 +7,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, DjangoModelPermissions, \
+    DjangoModelPermissionsOrAnonReadOnly
 from store.filters import ProductFilter
 from store.models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
 from rest_framework.response import Response
 
-from store.permissions import isAdminOrReadOnly
+from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer
 
@@ -89,7 +90,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAdminUser] # close API for this CustomerViewSet
+    permission_classes = [IsAdminUser]
 
     # Получаем информацию о текущем авторизованном клиенте без передачи id в URL
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])

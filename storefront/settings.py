@@ -151,10 +151,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
-}
-
 # Set user model to custom user model
 AUTH_USER_MODEL = 'core.User'
 
@@ -163,9 +159,11 @@ AUTH_USER_MODEL = 'core.User'
 DJOSER = {
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
+        'current_user': 'core.serializers.UserSerializer', # to customize /auth/users/me/
     }
 }
 
 SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
 }

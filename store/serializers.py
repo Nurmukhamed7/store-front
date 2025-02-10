@@ -102,7 +102,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
+    user_id = serializers.IntegerField(read_only=True) # read_only чтобы избежать ошибки с изменением id
 
     class Meta:
         model = Customer

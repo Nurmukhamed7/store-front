@@ -10,12 +10,12 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, DjangoModelPermissions, \
     DjangoModelPermissionsOrAnonReadOnly
 from store.filters import ProductFilter
-from store.models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
+from store.models import Product, Collection, Order, Review, Cart, CartItem, Customer
 from rest_framework.response import Response
 
 from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
-    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer
+    CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer, OrderSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -111,6 +111,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
 
 
 

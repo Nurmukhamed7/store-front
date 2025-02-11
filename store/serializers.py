@@ -1,3 +1,6 @@
+from itertools import product
+
+from django.db import transaction
 from rest_framework import serializers
 from decimal import Decimal
 from store.models import Product, Collection, Review, Cart, CartItem, Customer, Order, OrderItem
@@ -120,8 +123,32 @@ class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
     def save(self, **kwargs):
-        print(self.validated_data['cart_id'])
-        print(self.context['user_id'])
+        # Используем transaction.atomic(), чтобы все изменения были либо применены, либо отменены при ошибке
+        with transaction.atomic():
+            cart_id = self.validated_data['cart_id'] # Получаем cart_id из входных данных
 
-        (customer, created) = Customer.objects.get_or_create(user_id=self.context['user_id'])
-        Order.objects.create(customer=customer)
+            # Получаем или создаем объект Customer, связанный с текущим пользователем
+            (customer, created) = Customer.objects.get_or_create(user_id=self.context['user_id'])
+
+            # Создаем новый заказ (Order) для этого клиента
+            order = Order.objects.create(customer=customer)
+
+            # Получаем все товары из корзины (CartItem), которые относятся к данному cart_id
+            cart_items = CartItem.objects \
+                        .select_related('product') \
+                        .filter(cart_id=cart_id)
+
+            # Преобразуем cart_items в order_items для создания записей в OrderItem
+            order_items = [
+                OrderItem(order=order,
+                       product=item.product,
+                       unit_price=item.product.unit_price,
+                       quantity=item.quantity
+                ) for item in cart_items
+            ]
+
+            # Массово создаем все OrderItem записи (быстрее, чем делать .save() для каждого)
+            OrderItem.objects.bulk_create(order_items)
+
+            # Удаляем корзину, так как заказ уже оформлен
+            Cart.objects.filter(pk=cart_id).delete()

@@ -12,3 +12,13 @@ class isAdminOrReadOnly(permissions.BasePermission):
 class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     def __init__(self):
         self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
+
+
+'''
+Разрешает доступ только тем пользователям, у которых есть право store.view_history
+Если да → доступ разрешён.
+Если нет → API вернёт 403 Forbidden.
+'''
+class ViewCustomerHistoryPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm('store.view_history')

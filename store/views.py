@@ -13,7 +13,7 @@ from store.filters import ProductFilter
 from store.models import Product, Collection, OrderItem, Review, Cart, CartItem, Customer
 from rest_framework.response import Response
 
-from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions
+from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer
 
@@ -91,6 +91,12 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [IsAdminUser]
+
+    # Creating for viewing history of customer
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk): # название метода определяет маршрут /store/customers/1/history/
+        return Response('ok')
+
 
     # Получаем информацию о текущем авторизованном клиенте без передачи id в URL
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])

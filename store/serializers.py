@@ -4,6 +4,7 @@ from django.db import transaction
 from rest_framework import serializers
 from decimal import Decimal
 from store.models import Product, Collection, Review, Cart, CartItem, Customer, Order, OrderItem
+from store.signals import order_created
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -164,5 +165,7 @@ class CreateOrderSerializer(serializers.Serializer):
 
             # Удаляем корзину, так как заказ уже оформлен
             Cart.objects.filter(pk=cart_id).delete()
+
+            order_created.send_robust(self.__class__, order=order)
 
             return order

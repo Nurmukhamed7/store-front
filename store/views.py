@@ -10,7 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, DjangoModelPermissions, \
     DjangoModelPermissionsOrAnonReadOnly
 from store.filters import ProductFilter
-from store.models import Product, Collection, Order, Review, Cart, CartItem, Customer
+from store.models import Product, Collection, Order, Review, Cart, CartItem, Customer, OrderItem
 from rest_framework.response import Response
 
 from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
@@ -113,9 +113,21 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user # Получаем текущего авторизованного пользователя
 
+        # Если пользователь - администратор, возвращаем все заказы
+        if user.is_staff:
+            return Order.objects.all()
+
+        '''
+        Получаем `id` клиента, который связан с текущим пользователем
+        `.only('id')` используется для оптимизации, чтобы получить только поле `id`
+        '''
+        (customer_id, created) = Customer.objects.only('id').get_or_create(user_id=user.id)
+        return Order.objects.filter(customer_id=customer_id)
 
 

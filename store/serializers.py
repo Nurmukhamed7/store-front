@@ -152,3 +152,5 @@ class CreateOrderSerializer(serializers.Serializer):
 
             # Удаляем корзину, так как заказ уже оформлен
             Cart.objects.filter(pk=cart_id).delete()
+
+            return order

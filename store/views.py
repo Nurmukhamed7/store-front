@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from store.permissions import isAdminOrReadOnly, FullDjangoModelPermissions, ViewCustomerHistoryPermission
 from store.serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, CartSerializer, \
     CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer, OrderSerializer, \
-    CreateOrderSerializer
+    CreateOrderSerializer, UpdateOrderSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -136,6 +136,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateOrderSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateOrderSerializer
         return OrderSerializer
 
 
